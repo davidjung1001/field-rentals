@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/field-rentals/static/css/main.2fba7e8f.css",
+    "main.js": "/field-rentals/static/js/main.deab6eef.js",
+    "static/js/453.3a47e1e9.chunk.js": "/field-rentals/static/js/453.3a47e1e9.chunk.js",
+    "index.html": "/field-rentals/index.html",
+    "main.2fba7e8f.css.map": "/field-rentals/static/css/main.2fba7e8f.css.map",
+    "main.deab6eef.js.map": "/field-rentals/static/js/main.deab6eef.js.map",
+    "453.3a47e1e9.chunk.js.map": "/field-rentals/static/js/453.3a47e1e9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2fba7e8f.css",
+    "static/js/main.deab6eef.js"
+  ]
+}
