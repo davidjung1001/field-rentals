@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/field-rentals/static/css/main.301c5ecf.css",
-    "main.js": "/field-rentals/static/js/main.0863fb6c.js",
+    "main.css": "/field-rentals/static/css/main.c547316d.css",
+    "main.js": "/field-rentals/static/js/main.779a78fe.js",
     "static/js/453.3a47e1e9.chunk.js": "/field-rentals/static/js/453.3a47e1e9.chunk.js",
     "index.html": "/field-rentals/index.html",
-    "main.301c5ecf.css.map": "/field-rentals/static/css/main.301c5ecf.css.map",
-    "main.0863fb6c.js.map": "/field-rentals/static/js/main.0863fb6c.js.map",
+    "main.c547316d.css.map": "/field-rentals/static/css/main.c547316d.css.map",
+    "main.779a78fe.js.map": "/field-rentals/static/js/main.779a78fe.js.map",
     "453.3a47e1e9.chunk.js.map": "/field-rentals/static/js/453.3a47e1e9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.301c5ecf.css",
-    "static/js/main.0863fb6c.js"
+    "static/css/main.c547316d.css",
+    "static/js/main.779a78fe.js"
   ]
 }
