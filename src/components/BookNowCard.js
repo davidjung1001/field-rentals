@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaCalendarAlt, FaClock } from "react-icons/fa";
+import { FaCalendarAlt } from "react-icons/fa";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { loadStripe } from "@stripe/stripe-js";
@@ -34,9 +34,11 @@ const BookNowCard = ({ fieldId }) => {
           console.log("✅ Fetched availability:", availabilityData);
         } else {
           console.error("⚠️ No availability data found.");
+          setAvailableTimes({});
         }
       } catch (error) {
         console.error("❌ Error fetching availability:", error);
+        setAvailableTimes({});
       }
 
       setLoading(false);
@@ -54,6 +56,23 @@ const BookNowCard = ({ fieldId }) => {
 
   const formattedDate = selectedDate ? selectedDate.toISOString().split("T")[0] : "";
   const availableSlots = availableTimes[formattedDate] || [];
+  const hasAvailability = Object.keys(availableTimes).length > 0;
+
+  if (loading) {
+    return (
+      <div className="sticky top-50 w-full max-w-sm bg-white shadow-md rounded-lg p-5 border">
+        <p>Loading availability...</p>
+      </div>
+    );
+  }
+
+  if (!hasAvailability) {
+    return (
+      <div className="sticky top-50 w-full max-w-sm bg-white shadow-md rounded-lg p-5 border">
+        <h2 className="text-xl font-bold text-gray-800">No availability set for this field.</h2>
+      </div>
+    );
+  }
 
   return (
     <div className="sticky top-50 w-full max-w-sm bg-white shadow-md rounded-lg p-5 border">
@@ -109,13 +128,13 @@ const BookNowCard = ({ fieldId }) => {
             </div>
           )}
 
-          {/* ✅ End Time Selection (Filtered Based on Start Time) */}
+          {/* ✅ End Time Selection */}
           {selectedStartTime && (
             <div className="mt-4">
               <label className="text-sm font-semibold text-gray-700">Select End Time</label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {availableSlots
-                  .filter((time) => time > selectedStartTime) // ✅ Only show times after selected start time
+                  .filter((time) => time > selectedStartTime)
                   .map((time) => (
                     <button
                       key={time}
@@ -134,9 +153,9 @@ const BookNowCard = ({ fieldId }) => {
           <button
             onClick={() => setPaymentStep(true)}
             className="mt-4 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
-            disabled={!selectedStartTime || !selectedEndTime} // ✅ Ensure both start & end times are selected
+            disabled={!selectedStartTime || !selectedEndTime}
           >
-            Proceed to Payment 💳
+            Proceed to Booking 💳
           </button>
         </>
       )}
