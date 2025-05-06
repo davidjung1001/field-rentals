@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 const EditField = () => {
   const { fieldId } = useParams();
   const [fieldData, setFieldData] = useState(null);
+  const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +16,9 @@ const EditField = () => {
         const fieldSnap = await getDoc(fieldRef);
 
         if (fieldSnap.exists()) {
-          setFieldData(fieldSnap.data());
+          const data = fieldSnap.data();
+          setFieldData(data);
+          setFormData(data);
         } else {
           console.error("Field not found.");
         }
@@ -28,12 +31,16 @@ const EditField = () => {
     fetchFieldDetails();
   }, [fieldId]);
 
-  const handleUpdate = async (key, value) => {
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = async () => {
     try {
       const fieldRef = doc(db, "soccerFields", fieldId);
-      await updateDoc(fieldRef, { [key]: value });
-      setFieldData((prev) => ({ ...prev, [key]: value }));
-      console.log("✅ Field updated:", key);
+      await updateDoc(fieldRef, formData);
+      setFieldData(formData);
+      console.log("✅ Field updated");
     } catch (error) {
       console.error("❌ Error updating field:", error);
     }
@@ -47,31 +54,35 @@ const EditField = () => {
         <>
           <h2 className="text-2xl font-bold">Edit Field</h2>
 
-          {/* Editable Field Name */}
           <label className="block mt-4 text-sm font-semibold">Field Name</label>
-          <input 
-            type="text" 
-            value={fieldData.name || ""} 
-            onChange={(e) => handleUpdate("name", e.target.value)} 
+          <input
+            type="text"
+            value={formData.name || ""}
+            onChange={(e) => handleChange("name", e.target.value)}
             className="w-full p-2 border rounded"
           />
 
-          {/* Editable Price */}
           <label className="block mt-4 text-sm font-semibold">Price Per Hour</label>
-          <input 
-            type="number" 
-            value={fieldData.price_per_hour || ""} 
-            onChange={(e) => handleUpdate("price_per_hour", e.target.value)} 
+          <input
+            type="number"
+            value={formData.price_per_hour || ""}
+            onChange={(e) => handleChange("price_per_hour", e.target.value)}
             className="w-full p-2 border rounded"
           />
 
-          {/* Editable Description */}
           <label className="block mt-4 text-sm font-semibold">Description</label>
-          <textarea 
-            value={fieldData.description || ""} 
-            onChange={(e) => handleUpdate("description", e.target.value)} 
+          <textarea
+            value={formData.description || ""}
+            onChange={(e) => handleChange("description", e.target.value)}
             className="w-full p-2 border rounded"
           />
+
+          <button
+            onClick={handleSave}
+            className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Save Changes
+          </button>
         </>
       ) : (
         <p>Field not found.</p>

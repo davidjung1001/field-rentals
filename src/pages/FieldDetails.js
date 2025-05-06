@@ -21,6 +21,17 @@ const FieldDetails = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [user, setUser] = useState(null);
 
+  const [editMode, setEditMode] = useState({
+    description: false,
+    policy: false,
+    parking_info: false,
+  });
+  const [tempValues, setTempValues] = useState({
+    description: "",
+    policy: "",
+    parking_info: "",
+  });
+
   useEffect(() => {
     const fetchFieldDetails = async () => {
       try {
@@ -30,11 +41,9 @@ const FieldDetails = () => {
         if (fieldSnap.exists()) {
           setField(fieldSnap.data());
         } else {
-          console.error("⚠️ Field not found in Firestore.");
           setError("Field not found.");
         }
       } catch (error) {
-        console.error("❌ Error fetching field details:", error);
         setError("Failed to load field details.");
       } finally {
         setLoading(false);
@@ -45,11 +54,9 @@ const FieldDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    // ✅ Fetch logged-in user
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -57,12 +64,10 @@ const FieldDetails = () => {
     const handleScroll = () => {
       setScrollPosition(window.scrollY);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ✅ Function to update Firestore when editing
   const handleUpdate = async (key, value) => {
     try {
       const fieldRef = doc(db, "soccerFields", id);
@@ -74,15 +79,27 @@ const FieldDetails = () => {
     }
   };
 
-  // ✅ Check if logged-in user is the host
   const isHost = field?.hostId === user?.uid;
+
+  const startEdit = (key) => {
+    setEditMode((prev) => ({ ...prev, [key]: true }));
+    setTempValues((prev) => ({ ...prev, [key]: field?.[key] || "" }));
+  };
+
+  const cancelEdit = (key) => {
+    setEditMode((prev) => ({ ...prev, [key]: false }));
+  };
+
+  const saveEdit = async (key) => {
+    await handleUpdate(key, tempValues[key]);
+    setEditMode((prev) => ({ ...prev, [key]: false }));
+  };
 
   if (loading) return <p className="text-gray-500 text-center">Loading field details...</p>;
   if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
     <div className="max-w-6xl mx-auto p-6 mt-14">
-      {/* ✅ Back to Fields Button */}
       <button 
         onClick={() => navigate("/")} 
         className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition"
@@ -95,9 +112,7 @@ const FieldDetails = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* ✅ Left Column - Image & Field Info */}
         <div className="flex-1">
-          {/* ✅ Image Gallery */}
           <div className="w-full max-w-[800px] mx-auto mb-6">
             {field?.images?.length > 0 ? (
               <Swiper spaceBetween={10} slidesPerView={1} navigation pagination={{ clickable: true }} loop modules={[Navigation, Pagination]}>
@@ -120,7 +135,6 @@ const FieldDetails = () => {
             <p className="text-green-600 font-bold">${field?.price_per_hour || "N/A"}/hour</p>
           </div>
 
-          {/* ✅ Tab Navigation */}
           <div className="flex mt-6 space-x-6 border-b pb-2">
             {["Overview", "Policy & Rules", "Parking & Access"].map((tab) => (
               <button
@@ -133,50 +147,59 @@ const FieldDetails = () => {
             ))}
           </div>
 
-          {/* ✅ Editable Tab Content for Hosts */}
           <div className="mt-4">
-            {activeTab === "Overview" && (
-              isHost ? (
-                <textarea
-                  value={field?.description || ""}
-                  onChange={(e) => handleUpdate("description", e.target.value)}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Enter field overview..."
-                />
-              ) : (
-                <p>{field?.description || "No description available."}</p>
-              )
-            )}
+            {["Overview", "Policy & Rules", "Parking & Access"].map((tab) => {
+              const key =
+                tab === "Overview" ? "description" :
+                tab === "Policy & Rules" ? "policy" :
+                "parking_info";
 
-            {activeTab === "Policy & Rules" && (
-              isHost ? (
-                <textarea
-                  value={field?.policy || ""}
-                  onChange={(e) => handleUpdate("policy", e.target.value)}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Enter policy & rules..."
-                />
-              ) : (
-                <p>{field?.policy || "Policy details not specified."}</p>
-              )
-            )}
-
-            {activeTab === "Parking & Access" && (
-              isHost ? (
-                <textarea
-                  value={field?.parking_info || ""}
-                  onChange={(e) => handleUpdate("parking_info", e.target.value)}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Enter parking & access details..."
-                />
-              ) : (
-                <p>{field?.parking_info || "Parking details not specified."}</p>
-              )
-            )}
+              return activeTab === tab ? (
+                <div key={key} className="relative">
+                  {isHost ? (
+                    editMode[key] ? (
+                      <div>
+                        <textarea
+                          value={tempValues[key]}
+                          onChange={(e) => setTempValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                          className="w-full p-2 border rounded-md"
+                          rows={6}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => saveEdit(key)}
+                            className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => cancelEdit(key)}
+                            className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p>{field?.[key] || "No information provided."}</p>
+                        <button
+                          onClick={() => startEdit(key)}
+                          className="absolute top-0 right-0 text-blue-500 hover:text-blue-700 text-sm"
+                        >
+                          ✏️ Edit
+                        </button>
+                      </>
+                    )
+                  ) : (
+                    <p>{field?.[key] || "No information provided."}</p>
+                  )}
+                </div>
+              ) : null;
+            })}
           </div>
         </div>
 
-        {/* ✅ Right Column - Booking Card */}
         <div className={`w-full lg:w-[500px] sticky top-20 transition-all duration-500 ease-in-out ${scrollPosition > 100 ? "translate-y-4 opacity-90" : "opacity-100"} mt-10`}>
           <BookNowCard field={field} fieldId={id} />
         </div>
