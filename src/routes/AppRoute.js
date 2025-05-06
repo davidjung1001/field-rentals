@@ -10,6 +10,7 @@ import Register from "../pages/Register";
 import ProfileListings from "../pages/ProfileListings";
 import MyBookings from "../pages/MyBookings";
 import EditField from "../components/EditField";
+import ForgotPassword from "../pages/ForgotPassword";
 
 const AppRoute = () => {
   return (
@@ -23,6 +24,7 @@ const AppRoute = () => {
         <Route path="/add-field" element={<AddField />} />
         <Route path="/field/:id" element={<FieldDetails />} />
         <Route path="/my-bookings" element={<MyBookings />} /> 
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/edit-field/:fieldId" element={<EditField />} />
         <Route path="/add-availability/:fieldId" element={<AddAvailability />} />
         <Route path="/profile/:uid" element={<ProfileListings />} />

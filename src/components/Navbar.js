@@ -66,7 +66,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6">
         {/* ✅ Clickable Title */}
         <Link to="/" className="text-xl font-bold text-gray-800 hover:opacity-80 transition">
-          ⚽ Soccer Field Rentals
+          ⚽ Rent a Field
         </Link>
 
         {/* ✅ User & Add Field Section (Right Aligned) */}

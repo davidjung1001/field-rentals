@@ -11,7 +11,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBTJlQPoAk2KoftMOlrDIAeq_aAwMmszxw",
   authDomain: "soccer-field-f7eab.firebaseapp.com",
   projectId: "soccer-field-f7eab",
-  storageBucket: "soccer-field-f7eab.firebasestorage.app",
+  storageBucket: "soccer-field-f7eab.appspot.com",
   messagingSenderId: "155266704909",
   appId: "1:155266704909:web:4c58ada08922ccca891744",
   measurementId: "G-2PKRS36CTY"
@@ -19,6 +19,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-export const db = getFirestore(app)
+export { app, auth, db };
+

@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  sendPasswordResetEmail 
+} from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -25,7 +30,15 @@ const Login = () => {
     setSuccessMessage("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 🚨 Restrict login if email is not verified
+      if (!user.emailVerified) {
+        setError("❌ Please verify your email before logging in.");
+        return;
+      }
+
       setSuccessMessage("✅ Login successful!");
       navigate("/");
     } catch (err) {
@@ -46,6 +59,21 @@ const Login = () => {
     } catch (err) {
       setError("❌ Google sign-in failed.");
       console.error("Google login error:", err);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      navigate("/forgot-password")
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("📩 Password reset email sent! Check your inbox.");
+    } catch (error) {
+      console.error("Password reset error:", error.message);
+      alert("❌ Failed to send reset email.");
     }
   };
 
@@ -85,6 +113,13 @@ const Login = () => {
           className="mt-4 w-full bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition"
         >
           🔗 Sign in with Google
+        </button>
+
+        <button 
+          onClick={handlePasswordReset} 
+          className="mt-4 w-full text-blue-600 hover:underline"
+        >
+          Forgot Password?
         </button>
 
         <p className="text-center mt-4 text-gray-600">

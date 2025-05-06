@@ -81,7 +81,7 @@ const FieldDetails = () => {
   if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 mt-14">
       {/* ✅ Back to Fields Button */}
       <button 
         onClick={() => navigate("/")} 

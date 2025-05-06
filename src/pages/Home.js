@@ -9,7 +9,6 @@ import CategoryCard from "../components/CategoryCard"; // ✅ Import Category Ca
 const categories = [
   { name: "Futsal", image: `${process.env.PUBLIC_URL}/images/futsal.jpg` },
   { name: "Full Field", image: `${process.env.PUBLIC_URL}/images/full-field.jpg` },
-  { name: "7v7", image: `${process.env.PUBLIC_URL}/images/7v7.jpg` },
   { name: "Small Sided", image: `${process.env.PUBLIC_URL}/images/small-sided.jpg` },
 ];
 
@@ -79,34 +78,22 @@ const Home = () => {
 
   // ✅ Ensure search refines results instead of resetting listings
   useEffect(() => {
-    console.log("Filters before applying:", filters);
-    console.log("Fields Data Before Filtering:", fields);
-
-    if (!Array.isArray(fields)) {
-      console.error("Error: Fields is not an array!", fields);
-      return;
-    }
-
+    if (!fields.length) return; // ✅ Prevent filtering when there are no fields
+  
     const results = fields.filter(field =>
       (!searchQuery || field.name?.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (!filters.location || field.location?.toLowerCase().includes(filters.location.toLowerCase())) &&
       (!filters.priceRange || field.price_per_hour <= filters.priceRange) &&
-      (!Array.isArray(filters.type) || filters.type.length === 0 || filters.type.includes(field.type)) &&
-      (!Array.isArray(filters.surface) || filters.surface.length === 0 || filters.surface.includes(field.surface)) &&
-      (!Array.isArray(filters.category) || filters.category.length === 0 || filters.category.includes(field.category))
+      (!filters.surface.length || filters.surface.includes(field.surface))
     );
-
-    console.log("Filtered Results:", results);
-
-    // ✅ Preserve previous results unless filtering is applied
-    setFilteredFields(results.length > 0 ? results : fields);
+  
+    setFilteredFields(results.length ? results : fields); // ✅ Show all fields if no filters are active
   }, [searchQuery, filters, fields]);
 
   return (
     <div className="relative flex flex-col">
       
-      {/* ✅ Navbar (Fixed at the top) */}
-      <Navbar />
+    
 
       {/* ✅ Hero Section */}
       <div className="relative w-full h-[500px]">
@@ -137,7 +124,7 @@ const Home = () => {
       </div>
 
       {/* ✅ Field Listings */}
-      <div id="fields" className="relative bg-white p-6 rounded-t-3xl shadow-xl z-10">
+      <div id="fields" className="relative bg-gray-100 p-6 rounded-t-3xl shadow-xl z-10 max-w-8xl mx-auto">
         <h2 className="text-2xl font-bold text-center mb-4">Available Fields</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {loading ? <p className="text-gray-500 text-center">Loading fields...</p> 

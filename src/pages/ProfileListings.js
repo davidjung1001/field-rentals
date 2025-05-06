@@ -1,110 +1,70 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
+import { useState, useEffect } from "react";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { db, auth } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
 const ProfileListings = () => {
-  const { userId } = useParams();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
-  const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentUid, setCurrentUid] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setCurrentUid(user.uid);
-
-        try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            setUserInfo(userSnap.data());
-            console.log("✅ Fetched User Info:", userSnap.data());
-          } else {
-            console.warn("⚠️ No user found in Firestore.");
-          }
-        } catch (error) {
-          console.error("❌ Error fetching user info:", error);
-        }
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const fetchListings = async () => {
-      if (!currentUid) return;
+    const fetchUserListings = async () => {
+      setLoading(true);
+      if (!auth.currentUser) return;
 
       try {
-        console.log("Fetching listings for user UID:", currentUid);
-
-        const q = query(collection(db, "soccerFields"), where("hostId", "==", currentUid));
+        const q = query(collection(db, "soccerFields"), where("hostId", "==", auth.currentUser.uid));
         const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-          console.log("No listings found for this user.");
-        }
+        const listingsArray = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        const fetchedListings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log("Fetched Listings:", fetchedListings);
-        setListings(fetchedListings);
+        setListings(listingsArray);
       } catch (error) {
-        console.error("❌ Error fetching user listings:", error);
+        console.error("❌ Error fetching listings:", error);
       }
-
       setLoading(false);
     };
 
-    if (currentUid) fetchListings();
-  }, [currentUid]);
-
-  // ✅ Delete Listing Function
-  const handleDelete = async (listingId) => {
-    if (!window.confirm("Are you sure you want to delete this listing?")) return;
-
-    try {
-      await deleteDoc(doc(db, "soccerFields", listingId));
-      setListings(listings.filter(listing => listing.id !== listingId)); // ✅ Remove from UI
-      console.log("✅ Listing deleted:", listingId);
-    } catch (error) {
-      console.error("❌ Error deleting listing:", error);
-    }
-  };
+    fetchUserListings();
+  }, []);
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          <h2 className="text-3xl font-bold">{userInfo ? `${userInfo.username}'s Listings` : "Profile Listings"}</h2>
+    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">📋 Your Listed Fields</h2>
 
-          {listings.length === 0 ? (
-            <p>No listings found.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {listings.map(listing => (
-                <div key={listing.id} className="border p-4 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold">{listing.name}</h3>
-                  <p className="text-gray-600">{listing.location}</p>
-                  <p className="text-green-600 font-bold">${listing.price_per_hour}/hour</p>
-                  
-                  {/* ✅ Delete Button */}
-                  <button 
-                    onClick={() => handleDelete(listing.id)}
-                    className="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                  >
-                    Delete Listing
-                  </button>
-                </div>
-              ))}
+      {loading ? (
+        <p className="text-blue-500">Loading listings...</p>
+      ) : listings.length === 0 ? (
+        <p className="text-gray-500">⚠️ No fields listed yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {listings.map(field => (
+            <div key={field.id} className="p-4 border rounded-lg shadow-md">
+              {/* ✅ Display field image */}
+              {field.images?.length > 0 ? (
+                <img src={field.images[0]} alt={field.name} className="w-full h-32 object-cover rounded-lg mb-2" />
+              ) : (
+                <p className="text-gray-500">No image available</p>
+              )}
+
+              <h3 className="text-lg font-bold">{field.name}</h3>
+              <p className="text-gray-600">📍 {field.location}</p>
+              <p className="text-gray-600">💲 {field.price_per_hour}/hour</p>
+
+              {/* ✅ Edit link */}
+              <button 
+                onClick={() => navigate(`/edit-field/${field.id}`)}
+                className="mt-2 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
+              >
+                ✏️ Edit Field
+              </button>
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
     </div>
   );

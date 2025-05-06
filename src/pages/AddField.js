@@ -2,19 +2,21 @@ import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { doc, setDoc, getDoc } from "firebase/firestore"; // ✅ Added getDoc for fetching username
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { CLOUDINARY_URL, UPLOAD_PRESET } from "../cloudinaryConfig";
 
 const AddField = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [username, setUsername] = useState(""); // ✅ Store username separately
+  const [username, setUsername] = useState("");
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null); // ✅ Subscription status
   const [uploading, setUploading] = useState(false);
   const [fieldData, setFieldData] = useState({
     name: "",
     location: "",
     price_per_hour: "",
+    phoneNumber: "",  // ✅ Phone number for manual bookings
     images: [],
     category: "11v11",
     surface: "grass",
@@ -28,16 +30,17 @@ const AddField = () => {
         setUser(u);
 
         try {
-          // ✅ Fetch username from Firestore
           const userRef = doc(db, "users", u.uid);
           const userSnap = await getDoc(userRef);
+
           if (userSnap.exists()) {
             setUsername(userSnap.data().username || "Unknown Host");
+            setSubscriptionStatus(userSnap.data().subscriptionStatus || "inactive"); // ✅ Fetch subscription status
           } else {
-            console.warn("⚠️ No username found.");
+            console.warn("⚠️ No user data found.");
           }
         } catch (error) {
-          console.error("❌ Error fetching username:", error);
+          console.error("❌ Error fetching user data:", error);
         }
       } else {
         console.error("⚠️ No user detected—please log in.");
@@ -49,8 +52,6 @@ const AddField = () => {
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    console.log("Selected files:", files);
-
     setUploading(true);
 
     const uploadedImages = await Promise.all(files.map(async (file) => {
@@ -58,14 +59,11 @@ const AddField = () => {
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
 
-      console.log("Uploading file:", file.name);
-
       try {
         const response = await axios.post(CLOUDINARY_URL, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
-        console.log("✅ Upload success:", response.data.secure_url);
         return response.data.secure_url;
       } catch (error) {
         console.error("❌ Cloudinary Upload Failed:", error.response?.data || error.message);
@@ -74,7 +72,6 @@ const AddField = () => {
     }));
 
     setUploading(false);
-
     setFieldData((prevData) => ({
       ...prevData,
       images: [...prevData.images, ...uploadedImages.filter((url) => url !== null)],
@@ -89,7 +86,7 @@ const AddField = () => {
       return;
     }
 
-    if (!fieldData.name || !fieldData.location || !fieldData.price_per_hour) {
+    if (!fieldData.name || !fieldData.location || !fieldData.price_per_hour || !fieldData.phoneNumber) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -100,17 +97,22 @@ const AddField = () => {
         ...fieldData,
         fieldId: tempFieldId,
         hostId: user.uid,
-        hostUsername: username, // ✅ Save Username
-        availability: {},
-        bookedSlots: {},
+        hostUsername: username,
+        phoneNumber: fieldData.phoneNumber, // ✅ Store phone number for manual bookings
+        availability: subscriptionStatus === "active" ? {} : null, // ❌ Availability locked for non-subscribers
+        bookedSlots: subscriptionStatus === "active" ? {} : null,
       };
 
-      // ✅ Save Field with Username
       const fieldRef = doc(db, "soccerFields", tempFieldId);
       await setDoc(fieldRef, updatedFieldData);
 
       console.log("✅ Field saved successfully:", updatedFieldData);
-      navigate(`/add-availability/${tempFieldId}`, { state: { fieldData: updatedFieldData } });
+
+      if (subscriptionStatus === "active") {
+        navigate(`/add-availability/${tempFieldId}`, { state: { fieldData: updatedFieldData } });
+      } else {
+        alert("✅ Field listed! To enable bookings, upgrade your subscription.");
+      }
     } catch (error) {
       console.error("❌ Error saving field:", error);
       alert("Failed to save field. Please try again.");
@@ -135,37 +137,18 @@ const AddField = () => {
   return (
     <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-4">🏟️ Add a New Soccer Field</h2>
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        <p className="text-sm text-gray-600">Listing as: <strong>{username}</strong></p> {/* ✅ Show username */}
+        <p className="text-sm text-gray-600">Listing as: <strong>{username}</strong></p>
+
         <input type="text" placeholder="Field Name" className="w-full border rounded-lg p-2"
           value={fieldData.name} onChange={(e) => setFieldData({ ...fieldData, name: e.target.value })} required />
         <input type="text" placeholder="Location" className="w-full border rounded-lg p-2"
           value={fieldData.location} onChange={(e) => setFieldData({ ...fieldData, location: e.target.value })} required />
         <input type="number" placeholder="Price per Hour" className="w-full border rounded-lg p-2"
           value={fieldData.price_per_hour} onChange={(e) => setFieldData({ ...fieldData, price_per_hour: e.target.value })} required />
-        <select className="w-full border rounded-lg p-2"
-          onChange={(e) => setFieldData({ ...fieldData, category: e.target.value })}
-          value={fieldData.category}
-        >
-          <option value="11v11">11v11</option>
-          <option value="9v9">9v9</option>
-          <option value="7v7">7v7</option>
-          <option value="5v5">5v5</option>
-        </select>
-        <select className="w-full border rounded-lg p-2"
-          onChange={(e) => setFieldData({ ...fieldData, surface: e.target.value })}
-          value={fieldData.surface}
-        >
-          <option value="grass">Grass</option>
-          <option value="turf">Turf</option>
-        </select>
-        <select className="w-full border rounded-lg p-2"
-          onChange={(e) => setFieldData({ ...fieldData, type: e.target.value })}
-          value={fieldData.type}
-        >
-          <option value="indoor">Indoor</option>
-          <option value="outdoor">Outdoor</option>
-        </select>
+        <input type="text" placeholder="Phone Number for Bookings" className="w-full border rounded-lg p-2"
+          value={fieldData.phoneNumber} onChange={(e) => setFieldData({ ...fieldData, phoneNumber: e.target.value })} required />
 
         <input type="file" multiple accept="image/*"
           className="w-full border rounded-lg p-2"
@@ -183,8 +166,34 @@ const AddField = () => {
         <button type="submit"
           className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
         >
-          ➕ Next: Set Availability
+          ➕ List Field
         </button>
+
+        <button 
+          onClick={() => {
+            if (subscriptionStatus === "active") {
+              navigate(`/add-availability/${fieldData.fieldId}`, { state: { fieldData } });
+            }
+          }}
+          className={`w-full py-2 rounded-lg ${
+            subscriptionStatus === "active"
+              ? "bg-green-500 text-white hover:bg-green-600 transition"
+              : "bg-gray-400 text-gray-600 cursor-not-allowed"
+          }`}
+          disabled={subscriptionStatus !== "active"}
+        >
+          ➕ Add Availability
+        </button>
+
+        {subscriptionStatus !== "active" && (
+          <p className="text-red-500 text-center mt-2">
+            ⚠️ To enable availability and bookings, upgrade your subscription.
+            <br />
+            <button onClick={() => navigate("/manage-subscription")} className="text-blue-600 underline">
+              Manage Subscription
+            </button>
+          </p>
+        )}
       </form>
     </div>
   );
