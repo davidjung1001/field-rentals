@@ -59,7 +59,7 @@ const Navbar = () => {
           to="/"
           className="text-lg sm:text-xl font-bold text-gray-800 hover:opacity-80 transition"
         >
-          ⚽ Rent a Field
+          Rent a Field
         </Link>
 
         {/* Hamburger Icon */}

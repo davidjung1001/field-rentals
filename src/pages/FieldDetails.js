@@ -1,4 +1,3 @@
-// [Imports remain unchanged]
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -95,7 +94,7 @@ const FieldDetails = () => {
   if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
-    <div className="max-w-6xl mx-auto p-6 mt-14">
+    <div className="max-w-6xl mx-auto p-6 mt-14 bg-gradient-to-b from-blue-50 to-blue-100">
       <button
         onClick={() => navigate("/")}
         className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition"
@@ -104,14 +103,14 @@ const FieldDetails = () => {
       </button>
 
       <div className="text-left mb-4">
-        <h1 className="text-3xl font-bold">{field?.name || "Unknown Field"}</h1>
+        <h1 className="text-3xl font-bold text-blue-800">{field?.name || "Unknown Field"}</h1>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Left content */}
         <div className="flex-1">
           {/* Image Carousel */}
-          <div className="w-full max-w-[800px] mx-auto mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-400">
+          <div className="w-full max-w-[800px] mx-auto mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-300">
             {field?.images?.length > 0 ? (
               <Swiper
                 spaceBetween={10}
@@ -138,8 +137,8 @@ const FieldDetails = () => {
             )}
           </div>
 
-          {/* Basic Info */}
-          <div className="text-left">
+          {/* Basic Info with Background */}
+          <div className="text-left bg-white p-4 rounded-xl shadow-md mb-6">
             <p className="text-xs text-gray-500">Posted by: {field?.hostUsername || "Unknown"}</p>
             <p className="text-gray-700">{field?.location || "Location not specified"}</p>
             <p className="text-green-600 font-bold">${field?.price_per_hour || "N/A"}/hour</p>
@@ -161,8 +160,8 @@ const FieldDetails = () => {
             ))}
           </div>
 
-          {/* Content Area */}
-          <div className="mt-4">
+          {/* Content Area with Background */}
+          <div className="mt-4 bg-white p-6 rounded-xl shadow-md space-y-4">
             {["Overview", "Policy & Rules", "Parking & Access"].map((tab) => {
               const key =
                 tab === "Overview" ? "description" :
@@ -178,7 +177,7 @@ const FieldDetails = () => {
                         onChange={(e) =>
                           setTempValues((prev) => ({ ...prev, [key]: e.target.value }))
                         }
-                        className="w-full p-2 border rounded-md"
+                        className="w-full p-4 border border-gray-300 rounded-md shadow-sm"
                         rows={6}
                       />
                       <div className="flex gap-2 mt-2">

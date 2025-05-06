@@ -2,7 +2,7 @@ import HeroSearch from "./HeroSearch";
 
 const HeroSection = ({ searchQuery, setSearchQuery, applyFilters }) => {
   return (
-    <div className="relative w-full h-[700px] md:h-[800px]">
+    <div className="relative w-full h-screen"> {/* ✅ Now covers the full screen */}
       {/* ✅ Background Image */}
       <img
         src={`${process.env.PUBLIC_URL}/images/hero.jpg`}

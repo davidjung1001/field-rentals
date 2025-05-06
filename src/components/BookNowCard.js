@@ -18,33 +18,39 @@ const BookNowCard = ({ fieldId }) => {
   const [loading, setLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [fieldInfo, setFieldInfo] = useState(null);
 
   useEffect(() => {
-    const fetchFieldAvailability = async () => {
+    const fetchFieldData = async () => {
       if (!fieldId) return;
       setLoading(true);
 
       try {
-        const fieldRef = doc(db, "fieldAvailability", fieldId);
-        const docSnap = await getDoc(fieldRef);
+        const fieldRef = doc(db, "soccerFields", fieldId);
+        const fieldSnap = await getDoc(fieldRef);
 
-        if (docSnap.exists()) {
-          const availabilityData = docSnap.data().availability || {};
+        if (fieldSnap.exists()) {
+          const fieldData = fieldSnap.data();
+          setFieldInfo(fieldData);
+
+          const availabilityData = fieldData.availability || {};
           setAvailableTimes(availabilityData);
-          console.log("✅ Fetched availability:", availabilityData);
+          console.log("✅ Fetched field and availability:", fieldData);
         } else {
-          console.error("⚠️ No availability data found.");
+          console.error("⚠️ No field data found.");
+          setFieldInfo(null);
           setAvailableTimes({});
         }
       } catch (error) {
-        console.error("❌ Error fetching availability:", error);
+        console.error("❌ Error fetching field data:", error);
+        setFieldInfo(null);
         setAvailableTimes({});
       }
 
       setLoading(false);
     };
 
-    fetchFieldAvailability();
+    fetchFieldData();
   }, [fieldId]);
 
   const handleDateSelection = (date) => {
@@ -68,8 +74,17 @@ const BookNowCard = ({ fieldId }) => {
 
   if (!hasAvailability) {
     return (
-      <div className="sticky top-50 w-full max-w-sm bg-white shadow-md rounded-lg p-5 border">
-        <h2 className="text-xl font-bold text-gray-800">No availability set for this field.</h2>
+      <div className="sticky top-50 w-full max-w-sm bg-white shadow-md rounded-lg p-5 border text-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">No availability set for this field.</h2>
+        {fieldInfo?.phoneNumber ? (
+          <p className="text-gray-700">
+            📞 You can still <strong>book manually</strong> by contacting the host:
+            <br />
+            <span className="text-blue-600 font-medium">{fieldInfo.phoneNumber}</span>
+          </p>
+        ) : (
+          <p className="text-gray-500">Contact info not available.</p>
+        )}
       </div>
     );
   }

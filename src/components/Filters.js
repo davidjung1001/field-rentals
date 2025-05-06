@@ -1,5 +1,13 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FaFilter } from "react-icons/fa"; // ✅ Import filter icon
+
+const debounce = (fn, delay) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+};
 
 const Filters = ({ applyFilters, clearFilters }) => {
   const [showFilters, setShowFilters] = useState(false);
@@ -9,26 +17,26 @@ const Filters = ({ applyFilters, clearFilters }) => {
   const [selectedSurfaces, setSelectedSurfaces] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
+  const debouncedApplyFilters = useCallback(debounce(applyFilters, 300), [applyFilters]);
+
   // ✅ Toggle Filters on Click
-  const toggleFilters = () => setShowFilters(!showFilters);
+  const toggleFilters = () => setShowFilters((prev) => !prev);
 
-  // ✅ Handle checkbox selection
-  const toggleSelection = (list, setList, value) => {
-    setList((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
-  };
+  // ✅ Memoized toggle selection to prevent unnecessary array updates
+  const toggleSelection = useCallback((list, setList, value) => {
+    setList((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]));
+  }, []);
 
-  // ✅ Apply filters only when selections exist
-  const handleUpdateFilters = () => {
-    applyFilters({
+  // ✅ Ensure filters apply only when necessary (debounced inside `useEffect`)
+  useEffect(() => {
+    debouncedApplyFilters({
       location,
       priceRange,
       type: selectedTypes,
       surface: selectedSurfaces,
       category: selectedCategories,
     });
-  };
+  }, [location, priceRange, selectedTypes, selectedSurfaces, selectedCategories]);
 
   return (
     <div className="relative w-full">
@@ -44,7 +52,7 @@ const Filters = ({ applyFilters, clearFilters }) => {
           <select
             className="border p-2 rounded-lg w-full mb-2 text-black"
             value={location}
-            onChange={(e) => { setLocation(e.target.value); handleUpdateFilters(); }}
+            onChange={(e) => setLocation(e.target.value)}
           >
             <option value="">All Locations</option>
             <option value="Dallas">Dallas</option>
@@ -58,7 +66,7 @@ const Filters = ({ applyFilters, clearFilters }) => {
             min="10"
             max="200"
             value={priceRange}
-            onChange={(e) => { setPriceRange(Number(e.target.value)); handleUpdateFilters(); }}
+            onChange={(e) => setPriceRange(Number(e.target.value))}
             className="w-full"
           />
 
@@ -97,7 +105,7 @@ const Filters = ({ applyFilters, clearFilters }) => {
             <button onClick={clearFilters} className="bg-red-500 text-white p-2 rounded hover:bg-red-600">
               Clear Filters
             </button>
-            <button onClick={handleUpdateFilters} className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+            <button onClick={() => debouncedApplyFilters()} className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
               Apply Filters
             </button>
           </div>

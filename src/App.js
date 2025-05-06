@@ -1,16 +1,25 @@
 import { HashRouter } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import AppRoute from "./routes/AppRoute.js";
+import AppRoute from "./routes/AppRoute";
 
 function App() {
   return (
-    <HashRouter> {/* ✅ Use HashRouter instead of BrowserRouter */}
-      <Navbar />
-      <div className="min-h-screen overflow-x-hidden">
-        <AppRoute />
+    <HashRouter>
+      <div
+        className="relative min-h-screen bg-white bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${process.env.PUBLIC_URL}/images/full-field.jpg)`,
+          backgroundAttachment: "fixed",
+        }}
+      >
+        {/* Overlay for contrast if needed */}
+        <div className="relative z-10">
+          <Navbar />
+          <AppRoute />
+          <Footer />
+        </div>
       </div>
-      <Footer />
     </HashRouter>
   );
 }

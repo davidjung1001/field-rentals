@@ -33,35 +33,51 @@ const ProfileListings = () => {
   }, []);
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">📋 Your Listed Fields</h2>
+    <div className="max-w-3xl mx-auto p-8 bg-white shadow-lg rounded-lg mt-12">
+      <h2 className="text-3xl font-bold text-center mb-8">📋 Your Listed Fields</h2>
 
       {loading ? (
-        <p className="text-blue-500">Loading listings...</p>
+        <p className="text-blue-500 text-center">Loading listings...</p>
       ) : listings.length === 0 ? (
-        <p className="text-gray-500">⚠️ No fields listed yet.</p>
+        <p className="text-gray-500 text-center">⚠️ No fields listed yet.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-6">
           {listings.map(field => (
-            <div key={field.id} className="p-4 border rounded-lg shadow-md">
-              {/* ✅ Display field image */}
+            <div key={field.id} className="p-6 border border-gray-300 rounded-lg shadow-md bg-gray-50">
+              {/* Profile Picture */}
               {field.images?.length > 0 ? (
-                <img src={field.images[0]} alt={field.name} className="w-full h-32 object-cover rounded-lg mb-2" />
+                <img
+                  src={field.images[0]}
+                  alt={field.name}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
               ) : (
-                <p className="text-gray-500">No image available</p>
+                <div className="w-full h-48 bg-gray-300 rounded-lg mb-4 flex items-center justify-center">
+                  <span className="text-gray-600">No image available</span>
+                </div>
               )}
 
-              <h3 className="text-lg font-bold">{field.name}</h3>
+              <h3 className="text-xl font-semibold mb-2">{field.name}</h3>
               <p className="text-gray-600">📍 {field.location}</p>
               <p className="text-gray-600">💲 {field.price_per_hour}/hour</p>
 
-              {/* ✅ Edit link */}
-              <button 
-                onClick={() => navigate(`/edit-field/${field.id}`)}
-                className="mt-2 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
-              >
-                ✏️ Edit Field
-              </button>
+              <div className="mt-4 flex justify-between space-x-4">
+                {/* Edit Button */}
+                <button
+                  onClick={() => navigate(`/edit-field/${field.id}`)}
+                  className="w-full md:w-auto bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                >
+                  ✏️ Edit Field
+                </button>
+                
+                {/* Delete Button */}
+                <button
+                  onClick={() => {} /* handle delete logic here */}
+                  className="w-full md:w-auto bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition"
+                >
+                  ❌ Delete Field
+                </button>
+              </div>
             </div>
           ))}
         </div>

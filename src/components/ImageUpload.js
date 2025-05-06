@@ -13,24 +13,27 @@ const ImageUpload = ({ setImageURLs }) => {
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("upload_preset", UPLOAD_PRESET); // ✅ Uses your preset
+      formData.append("upload_preset", UPLOAD_PRESET);
 
       try {
         const response = await axios.post(CLOUDINARY_URL, formData);
-        imageURLs.push(response.data.secure_url); // ✅ Store Cloudinary image URLs
+        imageURLs.push(response.data.secure_url);
       } catch (error) {
         console.error("Cloudinary upload failed:", error);
       }
     }
 
     setUploading(false);
-    setImageURLs(imageURLs); // ✅ Send URLs to parent component (e.g., AddField.js)
+
+    if (imageURLs.length > 0) {
+      setImageURLs(imageURLs); // ✅ Only update if successful
+    }
   };
 
   return (
-    <div>
+    <div className="mt-2">
       <input type="file" multiple accept="image/*" onChange={handleImageUpload} />
-      {uploading && <p>Uploading images...</p>}
+      {uploading && <p className="text-sm text-gray-500">Uploading images...</p>}
     </div>
   );
 };
