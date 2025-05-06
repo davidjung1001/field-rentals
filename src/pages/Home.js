@@ -3,7 +3,6 @@ import { db } from "../firebaseConfig";
 import { useEffect, useState } from "react";
 import FieldCard from "../components/FieldCard";
 import HeroSearch from "../components/HeroSearch";
-import Navbar from "../components/Navbar";
 import CategoryCard from "../components/CategoryCard"; // ✅ Import Category Card Component
 
 const categories = [

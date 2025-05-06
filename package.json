@@ -27,7 +27,7 @@
     "swiper": "^11.2.6",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://davidjung1001.github.io/field-rentals",
+  "homepage": ".",
   "scripts": {
     "start": "react-scripts start",
     "build": "CI=false react-scripts build",
