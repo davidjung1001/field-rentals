@@ -31,19 +31,18 @@ const Filters = ({ applyFilters, clearFilters }) => {
   };
 
   return (
-    <div className="relative w-full flex justify-end">
-      
+    <div className="relative w-full">
       {/* ✅ Filter Icon (Click to Toggle) */}
       <button onClick={toggleFilters} className="text-black text-xl p-3">
         <FaFilter />
       </button>
 
-      {/* ✅ Filters Dropdown (Overlays Category Cards, No Extra Box) */}
+      {/* ✅ Only show dropdown if showFilters is true */}
       {showFilters && (
-        <div className="absolute top-full right-0 w-64 p-2 z-50 text-black bg-opacity-95">
-          
+        <div className="absolute top-full right-0 w-80 p-4 z-50 bg-white rounded-lg shadow-xl border">
           {/* ✅ Location Dropdown */}
-          <select className="border p-2 rounded-lg w-full mb-2 text-black"
+          <select
+            className="border p-2 rounded-lg w-full mb-2 text-black"
             value={location}
             onChange={(e) => { setLocation(e.target.value); handleUpdateFilters(); }}
           >
@@ -54,7 +53,11 @@ const Filters = ({ applyFilters, clearFilters }) => {
 
           {/* ✅ Price Range */}
           <label className="text-black font-semibold">Max Price: ${priceRange}</label>
-          <input type="range" min="10" max="200" value={priceRange}
+          <input
+            type="range"
+            min="10"
+            max="200"
+            value={priceRange}
             onChange={(e) => { setPriceRange(Number(e.target.value)); handleUpdateFilters(); }}
             className="w-full"
           />
@@ -64,7 +67,9 @@ const Filters = ({ applyFilters, clearFilters }) => {
             <h3 className="font-semibold">Surface Type</h3>
             {["Grass", "Turf", "Indoor"].map((surface) => (
               <label key={surface} className="flex items-center gap-2">
-                <input type="checkbox" checked={selectedSurfaces.includes(surface)}
+                <input
+                  type="checkbox"
+                  checked={selectedSurfaces.includes(surface)}
                   onChange={() => toggleSelection(selectedSurfaces, setSelectedSurfaces, surface)}
                 />
                 {surface}
@@ -77,7 +82,9 @@ const Filters = ({ applyFilters, clearFilters }) => {
             <h3 className="font-semibold">Categories</h3>
             {["Futsal", "Full Field", "Small Sided"].map((category) => (
               <label key={category} className="flex items-center gap-2">
-                <input type="checkbox" checked={selectedCategories.includes(category)}
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(category)}
                   onChange={() => toggleSelection(selectedCategories, setSelectedCategories, category)}
                 />
                 {category}
@@ -94,10 +101,8 @@ const Filters = ({ applyFilters, clearFilters }) => {
               Apply Filters
             </button>
           </div>
-
         </div>
       )}
-
     </div>
   );
 };

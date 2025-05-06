@@ -1,95 +1,37 @@
-import { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { IoFilter } from "react-icons/io5";  
-import Filters from "./Filters";  
+import { useState } from "react";
 
 const HeroSearch = ({ searchQuery, setSearchQuery, applyFilters }) => {
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [fieldSize, setFieldSize] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768); // ✅ Detect Mobile
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const [city, setCity] = useState("");
 
   const handleApplyFilters = () => {
     applyFilters({
-      searchQuery: searchQuery.trim() || "",
-      date: selectedDate,
-      fieldSize: fieldSize || "",
-      location: "",  
-      priceRange: 1000,  
+      searchQuery: city.trim() || "", // Applying the city filter only
+      location: city, // Assuming city is being used as location
+      priceRange: 1000, 
       type: [],
       surface: [],
       category: []
     });
-
-    setShowFilters(false);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex items-center justify-between bg-white bg-opacity-80 p-4 rounded-full shadow-lg backdrop-blur-md space-x-2">
-      
-      {/* ✅ Search Bar */}
+    <div className="w-full max-w-5xl bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center gap-4">
+      {/* ✅ Search Field for City */}
       <input
         type="text"
-        placeholder="Enter location"
-        className="flex-grow border border-gray-300 p-3 rounded-full text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Enter city..."
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+        className="w-full md:flex-1 border border-gray-300 px-4 py-3 rounded-xl text-black text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      {/* ✅ Hide Filters on Mobile */}
-      {!isMobile && (
-        <>
-          <DatePicker  
-            selected={selectedDate}  
-            onChange={(date) => setSelectedDate(date)}
-            className="border border-gray-300 p-3 rounded-full text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholderText="Select date"
-          />
-
-          <select  
-            className="border border-gray-300 p-3 rounded-full text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
-            onChange={(e) => setFieldSize(e.target.value)}
-          >
-            <option value="">Select field size</option>
-            <option value="5v5">5v5</option>
-            <option value="7v7">7v7</option>
-            <option value="9v9">9v9</option>
-            <option value="11v11">11v11</option>
-          </select>
-
-          <button  
-            onClick={handleApplyFilters}  
-            className="bg-blue-500 text-white px-5 py-3 rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all"
-          >
-            🔍 Search
-          </button>
-
-          {/* ✅ Filter Icon (Click to Toggle) */}
-          <button  
-            onClick={() => setShowFilters(!showFilters)}
-            className="bg-gray-300 text-black px-4 py-3 rounded-full text-sm flex items-center hover:bg-gray-400 shadow-md transition-all"
-          >
-            <IoFilter size={20} />
-          </button>
-
-          {/* ✅ Filters Overlay - No Extra White Container */}
-          {showFilters && (
-            <div className="absolute top-16 right-0 w-64 bg-white shadow-lg p-4 rounded-lg text-black z-50">
-              <Filters applyFilters={applyFilters} clearFilters={() => setShowFilters(false)} />
-            </div>
-          )}
-        </>
-      )}
+      {/* ✅ Search Button */}
+      <button
+        onClick={handleApplyFilters}
+        className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-md"
+      >
+        🔍 Search
+      </button>
     </div>
   );
 };

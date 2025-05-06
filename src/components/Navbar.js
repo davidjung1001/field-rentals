@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
-import { FaUserCircle, FaPlus, FaChevronDown } from "react-icons/fa"; // ✅ Arrow icon
+import { FaUserCircle, FaPlus, FaChevronDown, FaBars, FaTimes } from "react-icons/fa"; // ✅ Added hamburger and close icons
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // ✅ Mobile menu state
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -40,12 +41,12 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest(".dropdown-container")) { // ✅ Detect clicks outside
+      if (!event.target.closest(".dropdown-container")) {
         setIsDropdownOpen(false);
       }
     };
 
-    document.addEventListener("click", handleClickOutside); // ✅ Listen for outside clicks
+    document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
@@ -61,26 +62,36 @@ const Navbar = () => {
     }
   };
 
+  // Toggle mobile menu visibility
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <nav className="fixed top-0 left-0 w-full bg-gray-100 shadow-md p-4 z-[1000]">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6">
-        {/* ✅ Clickable Title */}
+        {/* Logo/Title */}
         <Link to="/" className="text-xl font-bold text-gray-800 hover:opacity-80 transition">
           ⚽ Rent a Field
         </Link>
 
-        {/* ✅ User & Add Field Section (Right Aligned) */}
+        {/* Hamburger Icon (Visible on small screens) */}
+        <button className="block lg:hidden" onClick={toggleMenu}>
+          <FaBars size={24} className="text-gray-800" />
+        </button>
+
+        {/* User & Add Field Section (Right Aligned) */}
         <div className="flex items-center gap-6">
           {user ? (
             <>
-              {/* ✅ Add Field Button */}
+              {/* Add Field Button */}
               <Link to="/add-field" className="text-gray-800 text-sm font-semibold hover:opacity-80 transition">
                 <FaPlus size={16} className="inline-block mr-1" />
                 Add Field
               </Link>
 
-              {/* ✅ Profile Dropdown */}
-              <div className="relative dropdown-container"> {/* ✅ Added class */}
+              {/* Profile Dropdown */}
+              <div className="relative dropdown-container">
                 <button 
                   className="flex items-center text-gray-800 text-sm font-semibold hover:opacity-80 transition"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -88,7 +99,7 @@ const Navbar = () => {
                   <FaUserCircle size={28} className="mr-2" />
                   <span className="text-lg font-bold">{username || "Guest"}</span> 
                   <FaChevronDown 
-                    className={`ml-2 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} // ✅ Arrow rotates when dropdown opens
+                    className={`ml-2 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
@@ -105,7 +116,7 @@ const Navbar = () => {
                       className="block w-full text-left px-3 py-1 hover:bg-gray-200"
                     >
                       My Bookings
-                    </Link> {/* ✅ Added "My Bookings" */}
+                    </Link>
                     <button 
                       onClick={handleLogout} 
                       className="block w-full text-left px-3 py-1 hover:bg-gray-200"
@@ -118,21 +129,19 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              {/* ✅ Add Field for Guests */}
               <Link to="/add-field" className="text-gray-800 text-sm font-semibold hover:opacity-80 transition">
                 <FaPlus size={16} className="inline-block mr-1" />
                 Add Field
               </Link>
 
-              {/* ✅ Profile Dropdown for Guests */}
-              <div className="relative dropdown-container"> {/* ✅ Added class */}
+              <div className="relative dropdown-container">
                 <button 
                   className="flex items-center text-gray-800 text-sm font-semibold hover:opacity-80 transition"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
                   <FaUserCircle size={28} />
                   <FaChevronDown 
-                    className={`ml-2 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} // ✅ Arrow rotates
+                    className={`ml-2 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
@@ -153,6 +162,46 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Menu (Shown only when 'isMenuOpen' is true) */}
+      <div className={`lg:hidden ${isMenuOpen ? "block" : "hidden"} mt-4`}>
+        <div className="flex flex-col gap-4">
+          {user ? (
+            <>
+              <Link to="/add-field" className="text-gray-800 text-sm font-semibold hover:opacity-80 transition">
+                Add Field
+              </Link>
+              <Link to={`/profile/${username}`} className="text-gray-800 text-sm font-semibold hover:opacity-80 transition">
+                View My Listings
+              </Link>
+              <Link to="/my-bookings" className="text-gray-800 text-sm font-semibold hover:opacity-80 transition">
+                My Bookings
+              </Link>
+              <button 
+                onClick={handleLogout} 
+                className="text-gray-800 text-sm font-semibold hover:opacity-80 transition"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => navigate("/login")} 
+                className="text-gray-800 text-sm font-semibold hover:opacity-80 transition"
+              >
+                Login
+              </button>
+              <button 
+                onClick={() => navigate("/register")} 
+                className="text-gray-800 text-sm font-semibold hover:opacity-80 transition"
+              >
+                Register
+              </button>
             </>
           )}
         </div>
