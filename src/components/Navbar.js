@@ -52,57 +52,53 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-gray-100 shadow-md p-2 sm:p-4 z-[1000]">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-3 sm:px-6">
-        {/* Logo/Title */}
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-sm border-b z-[1000]">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2">
+        {/* Logo */}
         <Link
           to="/"
-          className="text-lg sm:text-xl font-bold text-gray-800 hover:opacity-80 transition"
+          className="text-xl font-bold text-gray-800 hover:opacity-80 transition"
         >
           UltimateField
         </Link>
 
-        {/* Hamburger Icon */}
+        {/* Hamburger */}
         <button className="block lg:hidden" onClick={toggleMenu}>
           <FaBars size={22} className="text-gray-800" />
         </button>
 
-        {/* Desktop Right-side Buttons */}
-        <div className="hidden lg:flex items-center gap-6">
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-700">
           {user ? (
             <>
-              
+              <Link to="/pickup-soccer" className="hover:text-blue-600 transition">Play</Link>
+              <Link to="/pickup-chat" className="hover:text-blue-600 transition">Threads</Link>
 
-              <div className="relative dropdown-container">
+              <div className="relative">
                 <button
-                  className="flex items-center text-gray-800 text-sm font-semibold hover:opacity-80 transition"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center hover:text-blue-600 transition"
                 >
-                  <FaUserCircle size={24} className="mr-1" />
-                  <span>{username || "Guest"}</span>
+                  <FaUserCircle size={22} className="mr-1" />
+                  {username}
                   <FaChevronDown
-                    className={`ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                    className={`ml-1 transition-transform ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md p-2 text-sm">
+                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg border rounded-md text-sm">
                     <Link
-                      to={`/profile/${username}`}
-                      className="block w-full text-left px-3 py-1 hover:bg-gray-200"
+                      to="/my-bookings"
+                      className="block px-4 py-2 hover:bg-gray-100"
                     >
-                      View My Listings
+                      My Games
                     </Link>
-                    
-                    <Link
-                      to="/pickup-soccer"
-                      className="block w-full text-left px-3 py-1 hover:bg-gray-200"
-                      >
-                      Pick Up 
-                      </Link>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-3 py-1 hover:bg-gray-200"
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                     >
                       Logout
                     </button>
@@ -112,109 +108,43 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link
-                to="/add-field"
-                className="text-gray-800 text-sm font-semibold hover:opacity-80 transition"
-              >
-                <FaPlus size={16} className="inline-block mr-1" />
-                Add Field
+              <Link to="/add-field" className="flex items-center hover:text-blue-600 transition">
+                <FaPlus size={14} className="mr-1" /> Add Field
               </Link>
-
-              <div className="relative dropdown-container">
-                <button
-                  className="flex items-center text-gray-800 text-sm font-semibold hover:opacity-80 transition"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                  <FaUserCircle size={24} />
-                  <FaChevronDown
-                    className={`ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white shadow-lg rounded-md p-2 text-sm">
-                    <button
-                      onClick={() => navigate("/login")}
-                      className="block w-full text-left px-3 py-1 hover:bg-gray-200"
-                    >
-                      Login
-                    </button>
-                    <button
-                      onClick={() => navigate("/register")}
-                      className="block w-full text-left px-3 py-1 hover:bg-gray-200"
-                    >
-                      Register
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => navigate("/login")}
+                className="hover:text-blue-600 transition"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => navigate("/register")}
+                className="hover:text-blue-600 transition"
+              >
+                Register
+              </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
-      <div className={`lg:hidden ${isMenuOpen ? "block" : "hidden"} mt-3 px-4`}>
-        <div className="flex flex-col gap-3 text-sm">
+      {/* Mobile Dropdown */}
+      <div className={`lg:hidden ${isMenuOpen ? "block" : "hidden"} px-4 pb-4`}>
+        <div className="flex flex-col gap-3 text-sm text-gray-700 font-medium">
           {user ? (
             <>
-              <Link
-                to="/add-field"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-gray-800 font-medium hover:opacity-80 transition"
-              >
-                <FaPlus className="inline-block mr-1" />
-                Add Field
-              </Link>
-              <Link
-                to={`/profile/${username}`}
-                onClick={() => setIsMenuOpen(false)}
-                className="text-gray-800 font-medium hover:opacity-80 transition"
-              >
-                View My Listings
-              </Link>
-              <Link
-                to="/my-bookings"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-gray-800 font-medium hover:opacity-80 transition"
-              >
-                My Bookings
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-800 font-medium hover:opacity-80 transition text-left"
-              >
-                Logout
-              </button>
+              <Link to="/pickup-soccer" onClick={() => setIsMenuOpen(false)}>Play</Link>
+              <Link to="/pickup-chat" onClick={() => setIsMenuOpen(false)}>Threads</Link>
+              <Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>My Games</Link>
+              <button onClick={handleLogout}>Logout</button>
             </>
           ) : (
             <>
-              <Link
-                to="/add-field"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-gray-800 font-medium hover:opacity-80 transition"
-              >
-                <FaPlus className="inline-block mr-1" />
-                Add Field
+              <Link to="/add-field" onClick={() => setIsMenuOpen(false)}>
+                <FaPlus size={14} className="inline mr-1" /> Add Field
               </Link>
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate("/login");
-                }}
-                className="text-gray-800 font-medium hover:opacity-80 transition text-left"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate("/register");
-                }}
-                className="text-gray-800 font-medium hover:opacity-80 transition text-left"
-              >
-                Register
-              </button>
+              <button onClick={() => { setIsMenuOpen(false); navigate("/login"); }}>Login</button>
+              <button onClick={() => { setIsMenuOpen(false); navigate("/register"); }}>Register</button>
             </>
           )}
         </div>
