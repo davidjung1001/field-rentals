@@ -64,7 +64,7 @@ const Login = () => {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      navigate("/forgot-password")
+      alert("Please enter your email to reset your password!");
       return;
     }
 

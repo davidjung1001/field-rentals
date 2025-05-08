@@ -53,12 +53,7 @@ const Register = () => {
       });
 
       // 📩 Send welcome email via backend
-      await axios.post("http://localhost:5000/send-email", {
-        email,
-        subject: "Welcome to Soccer Bookings!",
-        message: `Hi ${username}, thanks for signing up! You can now book fields easily.`,
-      });
-
+      
       // ❌ Prevent automatic login by signing out the user
       await signOut(auth);
       navigate("/login");
