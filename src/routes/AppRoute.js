@@ -11,6 +11,10 @@ import ProfileListings from "../pages/ProfileListings";
 import MyBookings from "../pages/MyBookings";
 import EditField from "../components/EditField";
 import ForgotPassword from "../pages/ForgotPassword";
+import PickupSoccer from "../pages/PickupSoccer";
+import HostPickupGame from "../pages/HostPickupGame";
+import PickupGameDetails from "../pages/PickupGameDetails";
+import PickupChat from "../components/PickupChat";
 
 const AppRoute = () => {
   return (
@@ -22,7 +26,11 @@ const AppRoute = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/add-field" element={<AddField />} />
+        <Route path="/pickup-soccer" element={<PickupSoccer />} />
+        <Route path="/host-pickup-game" element={<HostPickupGame />} />
         <Route path="/field/:id" element={<FieldDetails />} />
+        <Route path="/pickup-game/:gameId" element={<PickupGameDetails />} />
+        <Route path="/pickup-chat" element={<PickupChat />} />
         <Route path="/my-bookings" element={<MyBookings />} /> 
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/edit-field/:fieldId" element={<EditField />} />

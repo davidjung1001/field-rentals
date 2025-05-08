@@ -6,19 +6,24 @@ import AppRoute from "./routes/AppRoute";
 function App() {
   return (
     <HashRouter>
+      {/* ✅ Wrap everything in a full-screen container with the background */}
       <div
-        className="relative min-h-screen bg-white bg-cover bg-center"
+        className="relative min-h-screen flex flex-col bg-white bg-cover bg-center"
         style={{
           backgroundImage: `url(${process.env.PUBLIC_URL}/images/full-field.jpg)`,
           backgroundAttachment: "fixed",
+          backgroundSize: "cover", // ✅ Ensure image covers the screen
+          backgroundPosition: "center", // ✅ Keep it centered
         }}
       >
-        {/* Overlay for contrast if needed */}
-        <div className="relative z-10">
+        {/* ✅ Content Section */}
+        <div className="relative z-10 flex-grow">
           <Navbar />
           <AppRoute />
-          <Footer />
         </div>
+        
+        {/* ✅ Footer Stays at Bottom */}
+        <Footer />
       </div>
     </HashRouter>
   );

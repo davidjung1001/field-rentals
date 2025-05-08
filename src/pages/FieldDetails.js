@@ -1,231 +1,154 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { FaArrowLeft } from "react-icons/fa";
-import BookNowCard from "../components/BookNowCard";
+import { db } from "../firebaseConfig";
 
-const FieldDetails = () => {
-  const { id } = useParams();
+const JoinRequestCard = ({ onClose, gameId, user, hostUsername }) => {
+  const [username, setUsername] = useState(user?.displayName || "");
+  const [phone, setPhone] = useState("");
+  const [position, setPosition] = useState("");
   const navigate = useNavigate();
-  const [field, setField] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("Overview");
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [user, setUser] = useState(null);
-
-  const [editMode, setEditMode] = useState({
-    description: false,
-    policy: false,
-    parking_info: false,
-  });
-  const [tempValues, setTempValues] = useState({
-    description: "",
-    policy: "",
-    parking_info: "",
-  });
+  const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const fetchFieldDetails = async () => {
-      try {
-        const fieldRef = doc(db, "soccerFields", id);
-        const fieldSnap = await getDoc(fieldRef);
-        if (fieldSnap.exists()) {
-          setField(fieldSnap.data());
-        } else {
-          setError("Field not found.");
-        }
-      } catch (error) {
-        setError("Failed to load field details.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchFieldDetails();
-  }, [id]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
+    setTimeout(() => setIsVisible(true), 100); // ✅ Delayed fade-in effect
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrollPosition(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // ✅ Auto-format phone number for better input handling
+  const formatPhoneNumber = (input) => {
+    const cleaned = input.replace(/\D/g, "").slice(0, 10);
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    return match ? `(${match[1]}) ${match[2]}-${match[3]}` : cleaned;
+  };
 
-  const handleUpdate = async (key, value) => {
+  // ✅ Function to handle joining the game
+  const joinGame = async () => {
+    console.log("🔥 Received gameId in JoinRequestCard:", gameId);
+    if (!username.trim() || !phone.trim() || !position) {
+      alert("⚠️ Please fill out all fields!");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const fieldRef = doc(db, "soccerFields", id);
-      await updateDoc(fieldRef, { [key]: value });
-      setField((prev) => ({ ...prev, [key]: value }));
+      const gameRef = doc(db, "pickupGames", gameId);
+      console.log("🔥 Attempting to join game with ID:", gameId);
+
+      const gameSnap = await getDoc(gameRef);
+
+      if (!gameSnap.exists()) {
+        alert("❌ Game not found!");
+        setLoading(false);
+        return;
+      }
+
+      const gameData = gameSnap.data();
+      console.log("🔥 Game Data Before Update:", gameData);
+
+      const currentPlayers = Array.isArray(gameData.players) ? gameData.players : [];
+
+      console.log("🔥 Current Players Before Update:", currentPlayers);
+
+      await updateDoc(gameRef, {
+        players: [...currentPlayers, { username, phone, position }],
+      });
+
+      console.log("✅ Successfully updated players!");
+
+      const updatedGameSnap = await getDoc(gameRef);
+      console.log("🔥 Updated Players After Update:", updatedGameSnap.data().players);
+
+      alert("✅ You have joined the game!");
+      onClose();
     } catch (error) {
-      console.error("Error updating field:", error);
+      console.error("❌ Error joining game:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isHost = field?.hostId === user?.uid;
-
-  const startEdit = (key) => {
-    setEditMode((prev) => ({ ...prev, [key]: true }));
-    setTempValues((prev) => ({ ...prev, [key]: field?.[key] || "" }));
-  };
-
-  const cancelEdit = (key) => {
-    setEditMode((prev) => ({ ...prev, [key]: false }));
-  };
-
-  const saveEdit = async (key) => {
-    await handleUpdate(key, tempValues[key]);
-    setEditMode((prev) => ({ ...prev, [key]: false }));
-  };
-
-  if (loading) return <p className="text-gray-500 text-center">Loading field details...</p>;
-  if (error) return <p className="text-red-500 text-center">{error}</p>;
-
   return (
-    <div className="max-w-6xl mx-auto p-6 mt-14 bg-gradient-to-b from-blue-50 to-blue-100">
-      <button
-        onClick={() => navigate("/")}
-        className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition"
-      >
-        <FaArrowLeft className="mr-2" /> Back to Fields
-      </button>
-
-      <div className="text-left mb-4">
-        <h1 className="text-3xl font-bold text-blue-800">{field?.name || "Unknown Field"}</h1>
+    <div
+      className={`fixed top-32 right-8 w-80 bg-white shadow-lg rounded-lg p-5 border overflow-y-auto max-h-[80vh] transition-all duration-500 ease-in-out
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[-20px]"}`}
+    >
+      
+      {/* Hosted By Section */}
+      <div className="text-center mb-4">
+        <h2 className="text-lg font-bold text-gray-800">Hosted By: {hostUsername || "Unknown"}</h2>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left content */}
-        <div className="flex-1">
-          {/* Image Carousel */}
-          <div className="w-full max-w-[800px] mx-auto mb-6 p-4 bg-white rounded-xl shadow-lg border border-gray-300">
-            {field?.images?.length > 0 ? (
-              <Swiper
-                spaceBetween={10}
-                slidesPerView={1}
-                navigation
-                pagination={{ clickable: true }}
-                loop
-                modules={[Navigation, Pagination]}
-              >
-                {field.images.map((image, index) => (
-                  <SwiperSlide key={index}>
-                    <img
-                      src={image}
-                      alt={`Field ${index}`}
-                      className="w-full h-[500px] object-cover rounded-lg"
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            ) : (
-              <div className="h-[500px] bg-gray-100 border border-dashed border-gray-400 rounded-xl flex items-center justify-center shadow-inner">
-                <span className="text-gray-500">No images available</span>
-              </div>
-            )}
-          </div>
+      <h2 className="text-xl font-bold text-gray-800">Join the Game</h2>
 
-          {/* Basic Info with Background */}
-          <div className="text-left bg-white p-4 rounded-xl shadow-md mb-6">
-            <p className="text-xs text-gray-500">Posted by: {field?.hostUsername || "Unknown"}</p>
-            <p className="text-gray-700">{field?.location || "Location not specified"}</p>
-            <p className="text-green-600 font-bold">${field?.price_per_hour || "N/A"}/hour</p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex mt-6 space-x-6 border-b pb-2">
-            {["Overview", "Policy & Rules", "Parking & Access"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`text-lg font-semibold px-4 py-2 ${activeTab === tab
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Content Area with Background */}
-          <div className="mt-4 bg-white p-6 rounded-xl shadow-md space-y-4">
-            {["Overview", "Policy & Rules", "Parking & Access"].map((tab) => {
-              const key =
-                tab === "Overview" ? "description" :
-                  tab === "Policy & Rules" ? "policy" :
-                    "parking_info";
-
-              return activeTab === tab ? (
-                <div key={key} className="mb-6">
-                  {isHost && editMode[key] ? (
-                    <div>
-                      <textarea
-                        value={tempValues[key]}
-                        onChange={(e) =>
-                          setTempValues((prev) => ({ ...prev, [key]: e.target.value }))
-                        }
-                        className="w-full p-4 border border-gray-300 rounded-md shadow-sm"
-                        rows={6}
-                      />
-                      <div className="flex gap-2 mt-2">
-                        <button
-                          onClick={() => saveEdit(key)}
-                          className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => cancelEdit(key)}
-                          className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="whitespace-pre-wrap">{field?.[key] || "No information provided."}</p>
-                      {isHost && (
-                        <button
-                          onClick={() => startEdit(key)}
-                          className="mt-2 inline-block text-blue-500 hover:text-blue-700 text-sm"
-                        >
-                          ✏️ Edit
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : null;
-            })}
-          </div>
+      {!user ? (
+        <div className="bg-yellow-100 text-yellow-700 p-4 rounded-md mb-4">
+          <p>Please log in to join the game.</p>
+          <button
+            onClick={() => navigate("/login")}
+            className="mt-2 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+          >
+            Log In
+          </button>
         </div>
+      ) : (
+        <>
+          <div className="mt-4">
+            <label className="text-sm font-semibold text-gray-700">Your Name</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 border rounded bg-gray-100 focus:bg-white"
+              placeholder="Enter your name"
+            />
+          </div>
 
-        {/* Right Booking Card */}
-        <div
-          className={`w-full lg:w-[500px] sticky top-20 transition-all duration-500 ease-in-out ${scrollPosition > 100
-            ? "translate-y-4 opacity-90"
-            : "opacity-100"
-            } mt-10`}
-        >
-          <BookNowCard field={field} fieldId={id} />
-        </div>
-      </div>
+          <div className="mt-4">
+            <label className="text-sm font-semibold text-gray-700">Phone Number</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+              className="w-full p-2 border rounded bg-gray-100 focus:bg-white"
+              placeholder="Enter your phone number"
+            />
+          </div>
+
+          <div className="mt-4">
+            <label className="text-sm font-semibold text-gray-700">Position</label>
+            <select
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              className="w-full p-2 border rounded bg-gray-100 focus:bg-white"
+            >
+              <option value="" disabled>Select your position</option>
+              <option value="Forward">Forward</option>
+              <option value="Midfielder">Midfielder</option>
+              <option value="Defender">Defender</option>
+              <option value="Goalkeeper">Goalkeeper</option>
+            </select>
+          </div>
+
+          <button
+            onClick={joinGame}
+            className="mt-4 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+            disabled={loading}
+          >
+            {loading ? "Joining..." : "Join Game"}
+          </button>
+          <button
+            onClick={onClose}
+            className="mt-2 w-full bg-gray-300 text-black p-2 rounded-md hover:bg-gray-400 transition"
+          >
+            Cancel
+          </button>
+        </>
+      )}
+
     </div>
   );
 };
 
-export default FieldDetails;
+export default JoinRequestCard;

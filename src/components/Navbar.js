@@ -71,13 +71,7 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center gap-6">
           {user ? (
             <>
-              <Link
-                to="/add-field"
-                className="text-gray-800 text-sm font-semibold hover:opacity-80 transition"
-              >
-                <FaPlus size={16} className="inline-block mr-1" />
-                Add Field
-              </Link>
+              
 
               <div className="relative dropdown-container">
                 <button
@@ -99,12 +93,13 @@ const Navbar = () => {
                     >
                       View My Listings
                     </Link>
+                    
                     <Link
-                      to="/my-bookings"
+                      to="/pickup-soccer"
                       className="block w-full text-left px-3 py-1 hover:bg-gray-200"
-                    >
-                      My Bookings
-                    </Link>
+                      >
+                      Pick Up 
+                      </Link>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-3 py-1 hover:bg-gray-200"
