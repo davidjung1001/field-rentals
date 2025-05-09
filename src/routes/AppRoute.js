@@ -15,6 +15,9 @@ import PickupSoccer from "../pages/PickupSoccer";
 import HostPickupGame from "../pages/HostPickupGame";
 import PickupGameDetails from "../pages/PickupGameDetails";
 import PickupChat from "../components/PickupChat";
+import ExplorePickupGames from "../pages/ExplorePickupGames";
+import YouthTryouts from "../pages/YouthTryouts";
+import PostTryout from "../pages/PostTryouts";
 
 const AppRoute = () => {
   return (
@@ -30,10 +33,13 @@ const AppRoute = () => {
         <Route path="/host-pickup-game" element={<HostPickupGame />} />
         <Route path="/field/:id" element={<FieldDetails />} />
         <Route path="/pickup-game/:gameId" element={<PickupGameDetails />} />
+        <Route path="/explore-pickup-games" element={<ExplorePickupGames />} />
         <Route path="/pickup-chat" element={<PickupChat />} />
         <Route path="/my-bookings" element={<MyBookings />} /> 
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/youth-tryouts" element={<YouthTryouts />} />
         <Route path="/edit-field/:fieldId" element={<EditField />} />
+        <Route path="/post-tryout" element={<PostTryout />} />
         <Route path="/add-availability/:fieldId" element={<AddAvailability />} />
         <Route path="/profile/:uid" element={<ProfileListings />} />
         <Route path="/book-field/:fieldId" element={<BookField />} />
